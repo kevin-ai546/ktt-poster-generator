@@ -1,0 +1,1147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>快团团素材生成器</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff4d57'/%3E%3Ctext x='32' y='42' font-size='34' text-anchor='middle' fill='white'%3E团%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --ink: #1f2329;
+      --muted: #7b8494;
+      --line: #e6e8ee;
+      --soft: #f0f2f5;
+      --accent: #ff4d57;
+      --accent-soft: #fff3f4;
+      --accent-2: #13a8c7;
+      --radius: 8px;
+      --shadow: 0 18px 50px rgba(31, 35, 41, .08);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    button, input, textarea, select { font: inherit; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(360px, 520px) 1fr;
+    }
+
+    .editor {
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      padding: 24px;
+      overflow: auto;
+      max-height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .mark {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1.5px solid var(--ink);
+      border-radius: 6px;
+      font-size: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .badge {
+      margin-left: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #dff7eb;
+      color: #12814d;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .section {
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      color: #5f6878;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .template-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .template-option {
+      border: 1px solid #d8dde6;
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 9px;
+      cursor: pointer;
+      text-align: center;
+      color: #3b4351;
+    }
+
+    .template-option.active {
+      border-color: var(--accent);
+      background: var(--accent-soft-tint);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+      color: var(--accent);
+      font-weight: 750;
+    }
+
+    .template-option.active .swatch {
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .65);
+    }
+
+    .swatch {
+      height: 28px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 65%, #ffffff));
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #697386;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    input[type="text"], input[type="number"], textarea, select {
+      width: 100%;
+      border: 1px solid #d9dee8;
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 11px 12px;
+      outline: none;
+      transition: border .15s, box-shadow .15s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field { margin-bottom: 14px; }
+
+    .hint {
+      margin-top: 6px;
+      color: #8a93a3;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .hint.error {
+      color: #d93025;
+      font-weight: 650;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      color: #6b7484;
+      font-size: 13px;
+    }
+
+    .points { display: grid; gap: 9px; }
+
+    .point-row {
+      display: grid;
+      grid-template-columns: 1fr 40px;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      border: 0;
+      border-radius: 7px;
+      background: #ffe8ea;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .add-btn, .export-btn, .reset-btn {
+      width: 100%;
+      border: 1px dashed #cbd2dd;
+      border-radius: 7px;
+      background: #fff;
+      color: #667085;
+      padding: 11px 12px;
+      cursor: pointer;
+    }
+
+    .add-btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .export-btn {
+      border: 0;
+      background: var(--ink);
+      color: white;
+      font-weight: 750;
+    }
+
+    .reset-btn { border-style: solid; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      position: sticky;
+      bottom: 0;
+      padding-top: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0), #fff 22%);
+    }
+
+    .preview-wrap {
+      min-height: 100vh;
+      padding: 32px;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(90deg, rgba(31,35,41,.04) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(31,35,41,.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .phone {
+      width: min(100%, 390px, calc((100vh - 48px) * 0.5625));
+      aspect-ratio: 720 / 1280;
+      border-radius: 18px;
+      overflow: hidden;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+
+    .preview-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #fff;
+    }
+
+    .actions .hint {
+      grid-column: 1 / -1;
+      margin-top: 0;
+      text-align: center;
+    }
+
+    #resetHint {
+      text-align: left;
+      margin-bottom: 10px;
+      padding: 9px 11px;
+      border: 1px dashed #dfe3ea;
+      border-radius: 7px;
+      background: #fbfcfe;
+      color: #8a93a3;
+    }
+
+    @media (max-width: 960px) {
+      .app { grid-template-columns: 1fr; }
+      .phone { width: min(100%, 390px); }
+      .editor {
+        max-height: none;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .preview-wrap {
+        min-height: auto;
+        padding: 22px 14px 34px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .editor { padding: 18px 14px; }
+      .template-row, .grid-2 { grid-template-columns: 1fr; }
+      .actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="editor" aria-label="素材信息填写">
+      <div class="brand">
+        <div class="mark">🛒</div>
+        <h1>快团团素材生成器</h1>
+        <span class="badge">本地版</span>
+      </div>
+
+      <div class="section">
+        <p class="section-title">版式模板</p>
+        <div class="template-row" role="group" aria-label="选择版式">
+          <button class="template-option active" type="button" data-template="classic" style="--accent:#ff4d57;--accent-soft-tint:#fff3f4">
+            <div class="swatch"></div>
+            居中促销
+          </button>
+          <button class="template-option" type="button" data-template="clean" style="--accent:#13a8c7;--accent-soft-tint:#eefafd">
+            <div class="swatch"></div>
+            左图清单
+          </button>
+          <button class="template-option" type="button" data-template="boom" style="--accent:#ff6c35;--accent-soft-tint:#fff4ee">
+            <div class="swatch"></div>
+            大图爆款
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <p class="section-title">基础信息</p>
+        <div class="field">
+          <label for="topTag">顶部标签</label>
+          <input id="topTag" type="text" placeholder="今日开团">
+        </div>
+        <div class="field">
+          <label for="brandName">团长昵称 / 品牌</label>
+          <input id="brandName" type="text" placeholder="小美优选·团长">
+        </div>
+        <div class="field">
+          <label for="productTitle">商品标题</label>
+          <input id="productTitle" type="text" placeholder="【新疆直发】阿克苏冰糖心苹果 5斤装">
+        </div>
+        <div class="field">
+          <label for="subtitle">副标题 / 一句话卖点</label>
+          <input id="subtitle" type="text" placeholder="咬一口爆汁甜脆 · 产地现摘现发">
+        </div>
+      </div>
+
+      <div class="section">
+        <p class="section-title">图片素材</p>
+        <div class="field">
+          <label for="productImage">商品主图</label>
+          <input id="productImage" type="file" accept="image/png,image/jpeg,image/webp">
+          <div class="hint">推荐 3:4；方图会自动按 1:1 展示，预览和导出都只在本机处理。支持 PNG / JPG / WEBP。</div>
+          <div class="hint" id="productImageStatus"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="imageRatio">图片展示比例</label>
+            <select id="imageRatio">
+              <option value="auto">自动识别</option>
+              <option value="3:4">3:4 竖图</option>
+              <option value="1:1">1:1 方图</option>
+              <option value="free">保留原图比例</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="imageFit">图片适配方式</label>
+            <select id="imageFit">
+              <option value="contain">完整展示</option>
+              <option value="cover">铺满裁切</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="qrImage">二维码</label>
+          <input id="qrImage" type="file" accept="image/png,image/jpeg,image/webp">
+          <div class="hint">上传团长二维码或商品码。建议用方图，会被居中裁切成正方形。</div>
+          <div class="hint" id="qrImageStatus"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <p class="section-title">核心卖点</p>
+        <div id="points" class="points"></div>
+        <button id="addPoint" class="add-btn" type="button">+ 添加一条卖点</button>
+        <div class="hint" id="pointsHint"></div>
+      </div>
+
+      <div class="section">
+        <p class="section-title">价格和转化文案</p>
+        <div class="grid-2">
+          <div class="field">
+            <label for="originalPrice">原价 ¥</label>
+            <input id="originalPrice" type="number" placeholder="39.9" step="0.1">
+          </div>
+          <div class="field">
+            <label for="salePrice">团购价 ¥</label>
+            <input id="salePrice" type="number" placeholder="19.9" step="0.1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="leaderNote">团长说</label>
+          <textarea id="leaderNote" placeholder="我自己吃了两箱，真的甜！这个价格基本就是产地价了，库存不多，手慢无～"></textarea>
+        </div>
+        <div class="field">
+          <label for="shipping">规格 / 发货信息</label>
+          <input id="shipping" type="text" placeholder="5斤/箱 · 默认圆通 · 48h 内发货 · 坏果包赔">
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="buttonMain">按钮主文案</label>
+            <input id="buttonMain" type="text" placeholder="长按识别 跟团购买">
+          </div>
+          <div class="field">
+            <label for="buttonSub">按钮副文案</label>
+            <input id="buttonSub" type="text" placeholder="早买早发 · 手慢无">
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <div class="hint" id="resetHint">「恢复示例」会用一套示例内容替换你当前填写的文字、价格、卖点和已选择的两张图片，版式保持你当前的选择；替换后无法找回，但也不会改动计算机上的任何文件。</div>
+        <button id="resetDemo" class="reset-btn" type="button">恢复示例</button>
+        <button id="exportPng" class="export-btn" type="button">导出 PNG</button>
+        <div class="hint" id="exportStatus"></div>
+      </div>
+    </section>
+
+    <section class="preview-wrap" aria-label="素材预览">
+      <article id="poster" class="phone">
+        <canvas id="previewCanvas" class="preview-canvas" width="720" height="1280" aria-label="素材预览画布"></canvas>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var W = 720;
+      var H = 1280;
+      var FONT = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
+      var PH_ON_COLOR = "rgba(255,255,255,.72)";
+      var PH_LIGHT = "#b6bdc9";
+
+      var TEXT_FIELDS = [
+        "topTag", "brandName", "productTitle", "subtitle",
+        "leaderNote", "shipping", "buttonMain", "buttonSub",
+        "originalPrice", "salePrice", "imageRatio", "imageFit"
+      ];
+
+      var MAX_POINTS = 6;
+      var POINT_SAMPLES = [
+        "产地直发，没有中间商加价",
+        "冰糖心占比高，一口爆汁甜",
+        "坏果包赔，售后无忧",
+        "48 小时内发货，坏果当场赔",
+        "甜度高于普通果，吃过都回购",
+        "库存有限，售完即恢复原价"
+      ];
+      var points = ["", "", ""];
+
+      function trimmed(text) {
+        return String(text || "").trim();
+      }
+
+      var template = "classic";
+
+      var THEMES = {
+        classic: { accent: "#ff4d57", cardFill: "#fff3f4", cardStroke: "#ffd6da", filledHeader: true, imageWidth: 500, minRatio: 0 },
+        clean: { accent: "#13a8c7", cardFill: "#eefafd", cardStroke: "#bfeef6", filledHeader: false, imageWidth: 350, minRatio: 0 },
+        boom: { accent: "#ff6c35", cardFill: "#fff4ee", cardStroke: "#ffd9c6", filledHeader: true, imageWidth: 648, minRatio: 1.05 }
+      };
+
+      function theme() {
+        return THEMES[template] || THEMES.classic;
+      }
+
+      function el(id) {
+        return document.getElementById(id);
+      }
+
+      function val(id) {
+        var node = el(id);
+        return node ? String(node.value || "").trim() : "";
+      }
+
+      function ph(id) {
+        var node = el(id);
+        return node ? String(node.placeholder || "").trim() : "";
+      }
+
+      function pick(id) {
+        return val(id) || ph(id);
+      }
+
+      function blank(id) {
+        return val(id).length === 0;
+      }
+
+      function clipLine(ctx, text, maxWidth) {
+        var content = String(text || "");
+        if (ctx.measureText(content).width <= maxWidth) return content;
+        var chars = Array.from(content);
+        while (chars.length > 1 && ctx.measureText(chars.join("") + "…").width > maxWidth) {
+          chars.pop();
+        }
+        return chars.join("") + "…";
+      }
+
+      function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+        var chars = Array.from(String(text || ""));
+        var lines = [];
+        var line = "";
+        for (var i = 0; i < chars.length; i++) {
+          var test = line + chars[i];
+          if (line !== "" && ctx.measureText(test).width > maxWidth) {
+            lines.push(line);
+            line = chars[i];
+          } else {
+            line = test;
+          }
+        }
+        if (line !== "") lines.push(line);
+
+        var shown = lines.slice(0, maxLines);
+        if (lines.length > maxLines && shown.length > 0) {
+          var last = shown[shown.length - 1];
+          while (last.length > 1 && ctx.measureText(last + "…").width > maxWidth) {
+            last = last.slice(0, -1);
+          }
+          shown[shown.length - 1] = last + "…";
+        }
+
+        for (var j = 0; j < shown.length; j++) {
+          ctx.fillText(shown[j], x, y + j * lineHeight);
+        }
+        return y + shown.length * lineHeight;
+      }
+
+      function roundedRect(ctx, x, y, w, h, r) {
+        var radius = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + w, y, x + w, y + h, radius);
+        ctx.arcTo(x + w, y + h, x, y + h, radius);
+        ctx.arcTo(x, y + h, x, y, radius);
+        ctx.arcTo(x, y, x + w, y, radius);
+        ctx.closePath();
+      }
+
+      function drawSellingPoints(ctx, items, accent, layout, y) {
+        ctx.textBaseline = "alphabetic";
+        for (var i = 0; i < items.length; i++) {
+          var empty = trimmed(items[i]).length === 0;
+          var hint = POINT_SAMPLES[i] || "第 " + (i + 1) + " 条卖点";
+          ctx.fillStyle = empty ? "#d7dce4" : accent;
+          ctx.beginPath();
+          ctx.arc(layout.markerX, y - 8, 16, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "900 20px " + FONT;
+          ctx.textAlign = "center";
+          ctx.fillText(String(i + 1), layout.markerX, y);
+          ctx.textAlign = "left";
+          ctx.fillStyle = empty ? PH_LIGHT : "#1f2329";
+          ctx.font = "700 24px " + FONT;
+          y = wrapText(ctx, empty ? hint : items[i], layout.x, y, layout.width, 30, layout.maxLines) + 8;
+        }
+        return y;
+      }
+
+      function makeImageSlot() {
+        var src = "";
+        var img = null;
+        return {
+          set: function (next) {
+            if (next !== src) {
+              src = next || "";
+              img = null;
+            }
+          },
+          get: function () {
+            if (!src) return Promise.resolve(null);
+            if (img) return Promise.resolve(img);
+            var self = this;
+            return new Promise(function (resolve) {
+              var node = new Image();
+              node.onload = function () {
+                img = node;
+                resolve(node);
+              };
+              node.onerror = function () {
+                img = null;
+                resolve(null);
+              };
+              node.src = src;
+            });
+          }
+        };
+      }
+
+      function readFileAsDataUrl(file, onDone, onError) {
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          onDone(String(reader.result));
+        };
+        reader.onerror = function () {
+          onError();
+        };
+        reader.readAsDataURL(file);
+      }
+
+      var ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
+      var MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+      function checkFile(file) {
+        if (file.type && ALLOWED_TYPES.indexOf(file.type) === -1) {
+          return "读不出来：" + file.type + " 不是支持的格式。请改用 PNG / JPG / WEBP 图片。";
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          return "图片太大（" + Math.round(file.size / 1048576) + "MB）：为保证本机流畅，请选择 20MB 以内的图片。";
+        }
+        return "";
+      }
+
+      function probeImage(src, callback) {
+        var node = new Image();
+        node.onload = function () {
+          callback(node.width > 0 && node.height > 0 ? node : null);
+        };
+        node.onerror = function () {
+          callback(null);
+        };
+        node.src = src;
+      }
+
+      function setStatus(id, text, isError) {
+        var node = el(id);
+        if (!node) return;
+        node.textContent = text;
+        node.classList.toggle("error", !!isError);
+      }
+
+      function bindImagePicker(inputId, statusId, slot, label) {
+        var input = el(inputId);
+        if (!input) return;
+        input.addEventListener("change", function (event) {
+          var file = event.target.files && event.target.files[0];
+          if (!file) return;
+          var problem = checkFile(file);
+          if (problem) {
+            setStatus(statusId, label + problem + "仍保留上一张已选择的图片。", true);
+            return;
+          }
+          readFileAsDataUrl(file, function (src) {
+            probeImage(src, function (img) {
+              if (!img) {
+                setStatus(statusId, label + "读取失败：文件可能已损坏，或后缀是图片但实际不是图片。请换一张重试；此前选择的图片仍然保留。", true);
+                return;
+              }
+              slot.set(src);
+              setStatus(statusId, label + "已选择：" + file.name + "（" + img.width + "×" + img.height + "，" + Math.max(1, Math.round(file.size / 1024)) + "KB）", false);
+              scheduleRender();
+            });
+          }, function () {
+            setStatus(statusId, label + "无法读取本机文件：可能是文件被占用或没有读取权限。请换一张重试。", true);
+          });
+        });
+      }
+
+      function clampRatio(value) {
+        return Math.max(0.55, Math.min(1.3, value));
+      }
+
+      function selectedImageRatio(img) {
+        var mode = val("imageRatio") || "auto";
+        if (mode === "3:4") return 3 / 4;
+        if (mode === "1:1") return 1;
+        if (!img) return 3 / 4;
+        var source = img.width / img.height;
+        if (mode === "free") return clampRatio(source);
+        if (source >= 0.9 && source <= 1.1) return 1;
+        return clampRatio(source);
+      }
+
+      function drawImageCover(ctx, img, x, y, w, h) {
+        var scale = Math.max(w / img.width, h / img.height);
+        var sw = w / scale;
+        var sh = h / scale;
+        var sx = (img.width - sw) / 2;
+        var sy = (img.height - sh) / 2;
+        ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+      }
+
+      function drawImageContain(ctx, img, x, y, w, h) {
+        var scale = Math.min(w / img.width, h / img.height);
+        var dw = img.width * scale;
+        var dh = img.height * scale;
+        var dx = x + (w - dw) / 2;
+        var dy = y + (h - dh) / 2;
+        ctx.drawImage(img, dx, dy, dw, dh);
+      }
+
+      function drawProductImage(ctx, img, x, y, w, h) {
+        ctx.save();
+        roundedRect(ctx, x, y, w, h, 22);
+        ctx.clip();
+        if (!img) {
+          ctx.fillStyle = "#eef1f5";
+          ctx.fillRect(x, y, w, h);
+          ctx.fillStyle = "#9aa3b1";
+          ctx.font = "500 28px " + FONT;
+          ctx.textAlign = "center";
+          ctx.fillText(clipLine(ctx, "未上传商品主图", w - 48), x + w / 2, y + h / 2 + 10);
+          ctx.textAlign = "left";
+        } else if (val("imageFit") === "cover") {
+          drawImageCover(ctx, img, x, y, w, h);
+        } else {
+          ctx.filter = "blur(20px)";
+          drawImageCover(ctx, img, x - 20, y - 20, w + 40, h + 40);
+          ctx.filter = "none";
+          ctx.fillStyle = "rgba(255,255,255,.26)";
+          ctx.fillRect(x, y, w, h);
+          drawImageContain(ctx, img, x, y, w, h);
+        }
+        ctx.restore();
+      }
+
+      function drawQrImage(ctx, img, x, y, w, h) {
+        ctx.save();
+        roundedRect(ctx, x, y, w, h, 16);
+        ctx.clip();
+        if (img) {
+          drawImageCover(ctx, img, x, y, w, h);
+        } else {
+          ctx.fillStyle = "#eef0f4";
+          ctx.fillRect(x, y, w, h);
+          ctx.fillStyle = "#b0b8c6";
+          ctx.font = "750 20px " + FONT;
+          ctx.textAlign = "center";
+          ctx.fillText("二维码", x + w / 2, y + h / 2 + 7);
+          ctx.textAlign = "left";
+        }
+        ctx.restore();
+      }
+
+      function money(amount) {
+        var parsed = Number(amount);
+        return Number.isFinite(parsed) ? parsed.toFixed(2) : "0.00";
+      }
+
+      function priceOf(id) {
+        var input = Number(val(id));
+        if (Number.isFinite(input) && val(id) !== "") return input;
+        var fallback = Number(ph(id));
+        return Number.isFinite(fallback) ? fallback : 0;
+      }
+
+      function drawPoster(ctx, productImg, qrImg) {
+        var style = theme();
+        var accent = style.accent;
+
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, W, H);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+
+        // 顶栏：左图清单为白底 + 底部色条，其余为实色底
+        ctx.fillStyle = style.filledHeader ? accent : "#ffffff";
+        ctx.fillRect(0, 0, W, 90);
+        if (!style.filledHeader) {
+          ctx.fillStyle = accent;
+          ctx.fillRect(0, 86, W, 4);
+        }
+
+        // 团长昵称 / 品牌
+        ctx.font = "800 26px " + FONT;
+        if (style.filledHeader) {
+          ctx.fillStyle = blank("brandName") ? PH_ON_COLOR : "#ffffff";
+        } else {
+          ctx.fillStyle = blank("brandName") ? PH_LIGHT : "#1f2329";
+        }
+        ctx.fillText(clipLine(ctx, pick("brandName"), 430), 36, 58);
+
+        // 顶部标签
+        ctx.font = "800 24px " + FONT;
+        var tagText = clipLine(ctx, pick("topTag"), 172);
+        var tagW = ctx.measureText(tagText).width + 48;
+        roundedRect(ctx, W - tagW - 36, 20, tagW, 50, 25);
+        ctx.fillStyle = style.filledHeader ? "rgba(255,255,255,.25)" : accent;
+        ctx.fill();
+        ctx.fillStyle = blank("topTag") ? (style.filledHeader ? PH_ON_COLOR : "rgba(255,255,255,.85)") : "#ffffff";
+        ctx.fillText(tagText, W - tagW - 12, 53);
+
+        // 商品标题
+        ctx.font = "900 36px " + FONT;
+        ctx.fillStyle = blank("productTitle") ? PH_LIGHT : "#1f2329";
+        var titleBottom = wrapText(ctx, pick("productTitle"), 36, 132, 648, 40, 2);
+
+        // 副标题
+        var subtitleY = titleBottom + 10;
+        ctx.font = "700 23px " + FONT;
+        var subtitleText = clipLine(ctx, pick("subtitle"), 566);
+        var subtitleW = Math.min(600, ctx.measureText(subtitleText).width + 34);
+        roundedRect(ctx, 36, subtitleY, subtitleW, 42, 21);
+        ctx.fillStyle = "#f4f6f9";
+        ctx.fill();
+        ctx.fillStyle = blank("subtitle") ? PH_LIGHT : "#748092";
+        ctx.fillText(subtitleText, 53, subtitleY + 28);
+
+        // 核心卖点：未填写的行显示浅灰占位，方便确认这块区域的位置
+        var items = points.map(trimmed).slice(0, MAX_POINTS);
+
+        // 商品主图：卖点越多，主图越矮，给下方留出空间
+        var imgRatio = Math.max(style.minRatio, selectedImageRatio(productImg));
+        if (!productImg && style.minRatio > 0) imgRatio = style.minRatio;
+        var baseImageHeight = Math.max(390, 510 - Math.max(0, items.length - 3) * 38);
+        var imgY = subtitleY + 56;
+        // 硬约束：价格卡及其下方共占用固定 300px，主图必须让出空间，否则优先压缩主图
+        var maxPriceTop = H - 300;
+        var allowedImageHeight = style.imageWidth / imgRatio;
+        if (template === "clean") {
+          allowedImageHeight = Math.min(allowedImageHeight, maxPriceTop - 4 - imgY - 24);
+        } else {
+          allowedImageHeight = Math.min(allowedImageHeight, maxPriceTop - 4 - imgY - 24 - 38 * items.length);
+        }
+        var imgH = Math.min(baseImageHeight, Math.max(260, allowedImageHeight));
+        var imgW = imgH * imgRatio;
+        var imgX = template === "clean" ? 36 : (W - imgW) / 2;
+        ctx.save();
+        ctx.shadowColor = "rgba(31, 35, 41, .16)";
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 12;
+        roundedRect(ctx, imgX, imgY, imgW, imgH, 22);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.restore();
+        drawProductImage(ctx, productImg, imgX, imgY, imgW, imgH);
+
+        // 卖点排版：左图清单排在图片右侧且可换行，其余版式排在图片下方
+        var pointLayout;
+        if (template === "clean") {
+          pointLayout = {
+            x: imgX + imgW + 30,
+            markerX: imgX + imgW + 16,
+            width: W - (imgX + imgW + 30) - 28,
+            maxLines: 2
+          };
+        } else {
+          pointLayout = { x: 90, markerX: 58, width: 590, maxLines: 1 };
+        }
+
+        var y = template === "clean" ? imgY + 40 : imgY + imgH + 24;
+        y = drawSellingPoints(ctx, items, accent, pointLayout, y);
+        if (template === "clean") y = Math.max(y, imgY + imgH + 24);
+        y += 4;
+
+        // 价格区：团购价 + 原价删除线 + 优惠提示
+        roundedRect(ctx, 36, y, 648, 86, 18);
+        ctx.fillStyle = style.cardFill;
+        ctx.fill();
+        ctx.strokeStyle = style.cardStroke;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        var saleValue = priceOf("salePrice");
+        var originalValue = priceOf("originalPrice");
+        var discount = Math.max(0, originalValue - saleValue);
+
+        ctx.fillStyle = blank("salePrice") ? PH_LIGHT : accent;
+        ctx.font = "900 31px " + FONT;
+        ctx.fillText("¥", 68, y + 56);
+        ctx.font = "950 52px " + FONT;
+        var saleText = money(saleValue);
+        ctx.fillText(saleText, 108, y + 60);
+        var originalX = Math.max(296, 108 + ctx.measureText(saleText).width + 20);
+
+        ctx.font = "400 24px " + FONT;
+        var originalText = "¥" + money(originalValue);
+        var originalSpace = Math.max(40, 512 - originalX - 24);
+        var originalShown = clipLine(ctx, originalText, originalSpace);
+        ctx.fillStyle = blank("originalPrice") ? PH_LIGHT : "#a2aab8";
+        ctx.fillText(originalShown, originalX, y + 56);
+        ctx.save();
+        ctx.strokeStyle = blank("originalPrice") ? PH_LIGHT : "#a2aab8";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(originalX, y + 47);
+        ctx.lineTo(originalX + ctx.measureText(originalShown).width, y + 47);
+        ctx.stroke();
+        ctx.restore();
+
+        var saveText = discount > 0 ? "立省 ¥" + Math.round(discount) : "立即跟团";
+        roundedRect(ctx, 512, y + 17, 132, 52, 26);
+        ctx.fillStyle = accent;
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 24px " + FONT;
+        ctx.fillText(clipLine(ctx, saveText, 92), 532, y + 52);
+
+        y += 98;
+
+        // 团长说
+        roundedRect(ctx, 36, y, 648, 76, 18);
+        ctx.fillStyle = "#f4f6f9";
+        ctx.fill();
+        ctx.fillStyle = accent;
+        ctx.font = "800 23px " + FONT;
+        ctx.fillText("团长说：", 66, y + 32);
+        ctx.fillStyle = blank("leaderNote") ? PH_LIGHT : "#3d4655";
+        ctx.font = "500 23px " + FONT;
+        wrapText(ctx, pick("leaderNote"), 160, y + 32, 500, 27, 2);
+
+        y += 86;
+
+        // 虚线分割
+        ctx.save();
+        ctx.strokeStyle = "#e1e5ed";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([7, 7]);
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+        ctx.restore();
+
+        y += 16;
+
+        // 二维码卡
+        roundedRect(ctx, 24, y - 10, 672, 110, 18);
+        ctx.fillStyle = "#fbfcfe";
+        ctx.fill();
+        ctx.strokeStyle = "#edf0f5";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        drawQrImage(ctx, qrImg, 36, y, 80, 80);
+
+        ctx.font = "950 28px " + FONT;
+        ctx.fillStyle = blank("buttonMain") ? PH_LIGHT : "#1f2329";
+        ctx.fillText(clipLine(ctx, pick("buttonMain"), 524), 140, y + 33);
+
+        ctx.font = "650 22px " + FONT;
+        ctx.fillStyle = blank("buttonSub") ? PH_LIGHT : "#7f8998";
+        ctx.fillText(clipLine(ctx, pick("buttonSub"), 524), 140, y + 64);
+
+        ctx.font = "500 19px " + FONT;
+        ctx.fillStyle = blank("shipping") ? PH_LIGHT : "#7f8998";
+        ctx.fillText(clipLine(ctx, pick("shipping"), 524), 140, y + 96);
+      }
+
+      var DEMO = {
+        topTag: "今日开团",
+        brandName: "小美优选·团长",
+        productTitle: "【新疆直发】阿克苏冰糖心苹果 5斤装",
+        subtitle: "咬一口爆汁甜脆 · 产地现摘现发",
+        originalPrice: "39.9",
+        salePrice: "19.9",
+        leaderNote: "我自己吃了两箱，真的甜！这个价格基本就是产地价了，库存不多，手慢无～",
+        shipping: "5斤/箱 · 默认圆通 · 48h 内发货 · 坏果包赔",
+        buttonMain: "长按识别 跟团购买",
+        buttonSub: "早买早发 · 手慢无",
+        imageRatio: "auto",
+        imageFit: "contain"
+      };
+
+      function pad2(number) {
+        return (number < 10 ? "0" : "") + number;
+      }
+
+      function timestamp() {
+        var now = new Date();
+        return "" + now.getFullYear() + pad2(now.getMonth() + 1) + pad2(now.getDate()) +
+          "-" + pad2(now.getHours()) + pad2(now.getMinutes()) + pad2(now.getSeconds());
+      }
+
+      function exportPoster() {
+        Promise.all([productSlot.get(), qrSlot.get()]).then(function (images) {
+          var canvas = document.createElement("canvas");
+          canvas.width = W;
+          canvas.height = H;
+          drawPoster(canvas.getContext("2d"), images[0], images[1]);
+          var dataUrl = "";
+          try {
+            dataUrl = canvas.toDataURL("image/png");
+          } catch (error) {
+            dataUrl = "";
+          }
+          if (!dataUrl) {
+            setStatus("exportStatus", "导出失败：浏览器阻止了画布导出。请改用 Chrome / Edge 打开本页面再试。", true);
+            return;
+          }
+          var fileName = "快团团素材-" + timestamp() + ".png";
+          var link = document.createElement("a");
+          link.href = dataUrl;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setStatus("exportStatus", "已导出 " + fileName + "（720×1280，存在浏览器的下载目录里）", false);
+        });
+      }
+
+      function resetDemo() {
+        if (!window.confirm("恢复示例会用示例内容替换当前填写的文字、价格、卖点和已选择的图片（版式保持不变），确定要继续吗？")) return;
+        Object.keys(DEMO).forEach(function (id) {
+          var node = el(id);
+          if (node) node.value = DEMO[id];
+        });
+        points = POINT_SAMPLES.slice(0, 3);
+        productSlot.set("");
+        qrSlot.set("");
+        var productInput = el("productImage");
+        if (productInput) productInput.value = "";
+        var qrInput = el("qrImage");
+        if (qrInput) qrInput.value = "";
+        setStatus("productImageStatus", "商品主图：尚未选择，海报显示占位块。", false);
+        setStatus("qrImageStatus", "二维码：尚未选择，海报显示占位块。", false);
+        setStatus("exportStatus", "", false);
+        renderPointsEditor();
+        render();
+      }
+
+      var pending = 0;
+      var renderToken = 0;
+      var productSlot = makeImageSlot();
+      var qrSlot = makeImageSlot();
+
+      function updatePointsUi() {
+        var addBtn = el("addPoint");
+        var hint = el("pointsHint");
+        var full = points.length >= MAX_POINTS;
+        addBtn.disabled = full;
+        addBtn.textContent = full
+          ? "已达上限（" + points.length + " / " + MAX_POINTS + " 条）"
+          : "+ 添加一条卖点（" + points.length + " / " + MAX_POINTS + " 条）";
+        hint.textContent = full
+          ? "卖点最多 " + MAX_POINTS + " 条，已到上限；删除任意一条后才能继续添加。未填写的行在海报上是浅灰占位。"
+          : "卖点最多 " + MAX_POINTS + " 条。未填写的行在海报上显示浅灰占位（和左边输入框里的灰色提示语一致），方便你确认这块区域在哪；填了字的行显示深色正文。";
+      }
+
+      function renderPointsEditor() {
+        var box = el("points");
+        box.textContent = "";
+        points.forEach(function (point, index) {
+          var row = document.createElement("div");
+          row.className = "point-row";
+
+          var input = document.createElement("input");
+          input.type = "text";
+          input.value = point;
+          input.placeholder = POINT_SAMPLES[index] || "第 " + (index + 1) + " 条卖点";
+          input.setAttribute("aria-label", "卖点 " + (index + 1));
+          input.addEventListener("input", function () {
+            points[index] = input.value;
+            scheduleRender();
+          });
+
+          var remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "icon-btn";
+          remove.textContent = "×";
+          remove.title = "删除第 " + (index + 1) + " 条卖点";
+          remove.setAttribute("aria-label", "删除卖点 " + (index + 1));
+          remove.addEventListener("click", function () {
+            points.splice(index, 1);
+            renderPointsEditor();
+            scheduleRender();
+          });
+
+          row.appendChild(input);
+          row.appendChild(remove);
+          box.appendChild(row);
+        });
+        updatePointsUi();
+      }
+
+      function addPoint() {
+        if (points.length >= MAX_POINTS) return;
+        points.push("");
+        renderPointsEditor();
+        var inputs = el("points").querySelectorAll("input");
+        if (inputs.length) inputs[inputs.length - 1].focus();
+        scheduleRender();
+      }
+
+      function render() {
+        pending = 0;
+        var canvas = el("previewCanvas");
+        if (!canvas || !canvas.getContext) return;
+        var ctx = canvas.getContext("2d");
+        var token = ++renderToken;
+        Promise.all([productSlot.get(), qrSlot.get()]).then(function (images) {
+          if (token !== renderToken) return;
+          drawPoster(ctx, images[0], images[1]);
+        });
+      }
+
+      function scheduleRender() {
+        if (pending) cancelAnimationFrame(pending);
+        pending = requestAnimationFrame(render);
+      }
+
+      TEXT_FIELDS.forEach(function (id) {
+        var node = el(id);
+        if (!node) return;
+        node.addEventListener("input", scheduleRender);
+        node.addEventListener("change", scheduleRender);
+      });
+
+      var addBtn = el("addPoint");
+      if (addBtn) addBtn.addEventListener("click", addPoint);
+
+      var exportBtn = el("exportPng");
+      if (exportBtn) exportBtn.addEventListener("click", exportPoster);
+
+      var resetBtn = el("resetDemo");
+      if (resetBtn) resetBtn.addEventListener("click", resetDemo);
+
+      var templateButtons = document.querySelectorAll(".template-option");
+      templateButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          templateButtons.forEach(function (item) {
+            item.classList.remove("active");
+          });
+          button.classList.add("active");
+          template = button.dataset.template;
+          scheduleRender();
+        });
+      });
+
+      bindImagePicker("productImage", "productImageStatus", productSlot, "商品主图：");
+      bindImagePicker("qrImage", "qrImageStatus", qrSlot, "二维码：");
+      setStatus("productImageStatus", "商品主图：尚未选择，海报显示占位块。", false);
+      setStatus("qrImageStatus", "二维码：尚未选择，海报显示占位块。", false);
+
+      renderPointsEditor();
+      render();
+    })();
+  </script>
+</body>
+</html>
